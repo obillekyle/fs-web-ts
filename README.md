@@ -134,7 +134,7 @@
   - [x] `copyFile()`
   - [x] `opendir()`
   - [x] `exists()`
-  - [ ] `cp()`
+  - [x] `cp()`
   - [x] `renameSync()`
   - [x] `truncateSync()`
   - [x] `ftruncateSync()`
@@ -171,7 +171,7 @@
   - [x] `existsSync()`
   - [x] `copyFileSync()`
   - [x] `opendirSync()`
-  - [ ] `cpSync()`
+  - [x] `cpSync()`
   - [x] `async openAsBlob()`
 
 - ### `fs/promises`

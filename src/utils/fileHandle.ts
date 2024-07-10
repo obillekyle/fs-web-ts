@@ -3,7 +3,8 @@ import { BlobToBuffer, toArrayBuffer, toBlob } from './data'
 import db from './db'
 import { BigIntStats, Stats } from './stats'
 import type { FsIndex, TimeLike } from './types'
-import { getIndexID, hasPerm, runAsSync } from './utils'
+import { getIndexID, hasPerm, runAsSync, validPath } from './utils'
+import { open } from '@/promises'
 
 export class FileHandle {
   readonly fd: number
@@ -170,9 +171,15 @@ export class FileHandle {
   }
 }
 
-export async function getHandle(file: string | number | FileHandle) {
+export async function getHandle(
+  file: string | number | FileHandle,
+  createIfMissing: boolean = false
+) {
   if (typeof file === 'string') {
-    return await FileHandle.from(file)
+    validPath(file)
+    return createIfMissing
+      ? await open(file, 'w+')
+      : await FileHandle.from(file)
   } else if (typeof file === 'number') {
     return new FileHandle(file)
   } else {

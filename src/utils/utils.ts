@@ -55,3 +55,9 @@ export async function getIndexID(
 
   return index?.key ?? undefined
 }
+
+export function validPath(path: string) {
+  if (!path.startsWith('/') || !Path.isAbsolute(path)) {
+    throw new Error('Invalid path')
+  }
+}

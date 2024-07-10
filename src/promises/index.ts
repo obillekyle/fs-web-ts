@@ -25,10 +25,7 @@ export async function copyFile(
   dest: string,
   mode: number = 666
 ) {
-  const srcHandle = await FileHandle.from(src)
-  const destHandle = await open(dest, mode)
-  const data = await srcHandle.readFile()
-  destHandle.writeFile(data)
+  await writeFile(dest, await readFile(src), { mode })
 }
 
 export async function open(
@@ -463,7 +460,7 @@ export async function writeFile(
   options?: any
 ) {
   data = await toBlob(data)
-  const handle = await getHandle(file)
+  const handle = await getHandle(file, true)
   await handle.writeFile(data, options)
   await handle.close()
 }
@@ -474,7 +471,7 @@ export async function appendFile(
   options?: any
 ) {
   data = await toBlob(data)
-  const handle = await getHandle(file)
+  const handle = await getHandle(file, true)
   await handle.appendFile(data, options)
   await handle.close()
 }
@@ -498,7 +495,29 @@ export async function watch(fileName: string, options?: any) {
 }
 
 export async function cp(source: string, dest: string, options?: any) {
-  throw new Error('Not implemented')
+  const toParse = Path.parse(dest)
+
+  const from = await Stats.from(source)
+  const toParent = await Stats.from(toParse.dir)
+
+  if (!toParent.isDirectory()) {
+    throw new Error("Destination's parent must be a directory")
+  }
+
+  if (from.isDirectory()) {
+    await mkdir(dest, { recursive: true })
+    const dir = await Dir.from(source)
+    for await (const item of dir) {
+      await cp(item.path, Path.join(dest, item.name), options)
+    }
+  } else if (from.isSymbolicLink()) {
+    const linkTo = await realpath(source)
+    await link(linkTo, dest)
+  } else if (from.isFile()) {
+    await writeFile(dest, await readFile(source))
+  } else {
+    throw new Error('Unsupported index type')
+  }
 }
 
 export default {
